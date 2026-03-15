@@ -1,4 +1,5 @@
 # Resume Event Demo
+To view a video demonstration, click here: https://youtu.be/SMvhYABorZ8
 
 Minimal backend-first event-driven demo using:
 
