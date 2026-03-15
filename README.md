@@ -2,7 +2,7 @@
 
 Minimal backend-first event-driven demo using:
 
-- .NET 10 (Producer API + Consumer Service)
+- .NET 10 (producer + consumer)
 - RabbitMQ
 - CloudEvents 1.0
 - Kubernetes (RabbitMQ + Consumer)
@@ -25,9 +25,9 @@ Swagger is the primary local interface at `http://localhost:8080/swagger`.
 ## Architecture
 
 ```text
-Swagger UI (Producer API)
+Swagger UI (producer)
           |
-Producer API (.NET 10)
+producer (.NET 10)
           |
 RabbitMQ (Kubernetes)
           |
@@ -38,36 +38,63 @@ Results Endpoint (/results/{eventId})
 
 ## Clean code structure
 
-The Producer API now follows a lightweight DDD-style separation:
+The producer project follows a lightweight DDD-style separation:
 
-- `Controllers/` (HTTP layer)
-- `Application/` (use-case services + contracts)
-- `Infrastructure/` (RabbitMQ and outbound service integration)
-- `Domain` objects (`ResumeEventFactory`, CloudEvent payload models)
+- `Api/` (HTTP layer)
+- `Application/Producer/Contracts/` (application contracts + DTOs)
+- `Application/Producer/Services/` (use-case services)
+- `Domain/Producer/Events/` (CloudEvent + payload model and factory)
+- `Infrastructure/Producer/Messaging/` (RabbitMQ publisher)
+- all of these folders live inside the single `producer` project
 
-Consumer service exposes its HTTP endpoint through a controller and keeps processing concerns in dedicated services.
+The consumer project uses a similar separation:
+
+- `Api/` (HTTP layer)
+- `Domain/Consumer/Models/` (event + result models)
+- `Domain/Consumer/Services/` (domain logic such as skill detection)
+- `Infrastructure/Consumer/Persistence/` (in-memory result store)
+- `Infrastructure/Producer/Messaging/` (RabbitMQ consumer worker)
+- all of these folders live inside the single `consumer` project
 
 ## Project structure
 
 ```text
 resume-delivery-express/
-  Program.cs                       # root runner (dotnet run)
-  resume-event-demo.csproj
   resume-event-demo.slnx
-  producer-api/
-    Controllers/
+  producer/
+    Api/
+    producer.csproj
     Application/
+      Producer/
+        Contracts/
+        Services/
+    Domain/
+      Producer/
+        Events/
     Infrastructure/
-  consumer-service/
-    Controllers/
-  consumer-service.tests/
-  producer-api.tests/
+      Producer/
+        Messaging/
+  consumer/
+    Api/
+    consumer.csproj
+    Domain/
+      Consumer/
+        Models/
+        Services/
+    Infrastructure/
+      Consumer/
+        Messaging/
+        Persistence/
+  tests/
+    tests.csproj
+    Producer/
+    Consumer/
   infra/
     k8s/
       rabbitmq-deployment.yaml
       rabbitmq-service.yaml
       consumer-deployment.yaml
-      consumer-service.yaml
+      consumer.yaml
 ```
 
 ## Endpoints (via Swagger)
@@ -90,22 +117,23 @@ Once running on `http://localhost:8080/swagger`, you can invoke:
 ### 1) Build consumer image
 
 ```bash
-docker build -t consumer-service:local ./consumer-service
+docker build -t consumer:local ./consumer
 ```
 
 If using kind:
 
 ```bash
-kind load docker-image consumer-service:local
+kind load docker-image consumer:local
 ```
 
 ### 2) Deploy RabbitMQ + Consumer
 
 ```bash
+kubectl apply -f infra/k8s/namespace.yaml
 kubectl apply -f infra/k8s/rabbitmq-deployment.yaml
 kubectl apply -f infra/k8s/rabbitmq-service.yaml
 kubectl apply -f infra/k8s/consumer-deployment.yaml
-kubectl apply -f infra/k8s/consumer-service.yaml
+kubectl apply -f infra/k8s/consumer.yaml
 ```
 
 ### 3) Port-forward Kubernetes services
@@ -116,17 +144,23 @@ RabbitMQ AMQP:
 kubectl port-forward service/rabbitmq 5672:5672
 ```
 
+Add `-n resume-demo` if your current kubectl context is not already set to that namespace.
+
 RabbitMQ Management UI:
 
 ```bash
 kubectl port-forward service/rabbitmq 15672:15672
 ```
 
+Add `-n resume-demo` if needed.
+
 Consumer results endpoint:
 
 ```bash
-kubectl port-forward service/consumer-service 5002:8080
+kubectl port-forward service/consumer 5002:8080
 ```
+
+Add `-n resume-demo` if needed.
 
 ### 4) Run backend locally
 
@@ -136,7 +170,7 @@ From repository root:
 dotnet run
 ```
 
-This starts Producer API on `http://localhost:8080`.
+This starts producer on `http://localhost:8080`.
 
 ## Verifying the system works
 
@@ -147,8 +181,8 @@ This starts Producer API on `http://localhost:8080`.
 5. Check consumer logs:
 
    ```bash
-   kubectl get pods -l app=consumer-service
-   kubectl logs <consumer-pod>
+   kubectl get pods -n resume-demo -l app=consumer
+   kubectl logs -n resume-demo <consumer-pod>
    ```
 
 6. Confirm response includes:
@@ -163,3 +197,4 @@ This starts Producer API on `http://localhost:8080`.
 4. Show consumer pod logs receiving/processing the event.
 5. Call `GET /results/{eventId}` and show processed output.
 6. Highlight `processedByPod` returning Kubernetes pod name.
+

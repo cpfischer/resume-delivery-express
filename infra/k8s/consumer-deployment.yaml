@@ -1,20 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: consumer-service
+  name: consumer
+  namespace: resume-demo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: consumer-service
+      app: consumer
   template:
     metadata:
       labels:
-        app: consumer-service
+        app: consumer
     spec:
       containers:
-        - name: consumer-service
-          image: consumer-service:local
+        - name: consumer
+          image: consumer:local
           imagePullPolicy: IfNotPresent
           env:
             - name: RABBITMQ_HOST
@@ -25,3 +26,4 @@ spec:
               value: http://+:8080
           ports:
             - containerPort: 8080
+
