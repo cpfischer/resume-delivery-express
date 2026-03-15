@@ -6,6 +6,7 @@ using Consumer.Api.Infrastructure.Persistence;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Exceptions;
 using RabbitMQ.Client.Events;
 
 namespace Consumer.Api.Infrastructure.Consumer;
@@ -16,6 +17,7 @@ public sealed class ResumeEventConsumer(ResultStore resultStore, ILogger<ResumeE
     {
         var queueName = Environment.GetEnvironmentVariable("RABBITMQ_QUEUE") ?? "resume.events";
         var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "rabbitmq";
+        var retryCount = 0;
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -41,11 +43,21 @@ public sealed class ResumeEventConsumer(ResultStore resultStore, ILogger<ResumeE
                     consumer: consumer);
 
                 logger.LogInformation("Listening for events on queue {Queue}", queueName);
+                retryCount = 0;
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     await Task.Delay(1000, stoppingToken);
                 }
+            }
+            catch (BrokerUnreachableException)
+            {
+                retryCount++;
+                logger.LogWarning(
+                    "RabbitMQ at {Host} is not ready yet. Retry {RetryCount} in 3 seconds.",
+                    rabbitHost,
+                    retryCount);
+                await Task.Delay(3000, stoppingToken);
             }
             catch (Exception ex)
             {

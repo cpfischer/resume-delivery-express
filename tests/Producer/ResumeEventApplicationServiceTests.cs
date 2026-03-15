@@ -12,7 +12,7 @@ public sealed class ResumeEventApplicationServiceTests
         var publisher = new CapturingPublisher();
         var service = new ResumeEventApplicationService(publisher);
 
-        var eventId = await service.PublishAsync(CancellationToken.None);
+        var eventId = await service.PublishAsync(new PublishResumeEventRequest(), CancellationToken.None);
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(eventId));
         Assert.IsNotNull(publisher.LastPublishedEvent);

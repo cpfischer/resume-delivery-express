@@ -7,9 +7,9 @@ namespace Producer.Api.Api;
 public sealed class ResumeEventsController(IResumeEventApplicationService resumeEventApplicationService, IResultQueryService resultQueryService) : ControllerBase
 {
     [HttpPost("/publish-resume-event")]
-    public async Task<ActionResult<PublishEventResponse>> PublishResumeEvent(CancellationToken cancellationToken)
+    public async Task<ActionResult<PublishEventResponse>> PublishResumeEvent([FromBody] PublishResumeEventRequest? request, CancellationToken cancellationToken)
     {
-        var eventId = await resumeEventApplicationService.PublishAsync(cancellationToken);
+        var eventId = await resumeEventApplicationService.PublishAsync(request ?? new PublishResumeEventRequest(), cancellationToken);
         return Ok(new PublishEventResponse(eventId));
     }
 

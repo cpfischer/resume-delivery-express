@@ -19,3 +19,19 @@ spec:
           ports:
             - containerPort: 5672
             - containerPort: 15672
+          startupProbe:
+            tcpSocket:
+              port: 15672
+            periodSeconds: 5
+            failureThreshold: 24
+          readinessProbe:
+            tcpSocket:
+              port: 15672
+            periodSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            tcpSocket:
+              port: 5672
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
