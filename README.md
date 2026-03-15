@@ -110,25 +110,98 @@ Once running on `http://localhost:8080/swagger`, you can invoke:
 ### Prerequisites
 
 - .NET 10 SDK
-- Docker
-- Kubernetes cluster (Docker Desktop Kubernetes, kind, or minikube)
+- Docker Desktop or a running local Docker daemon
+- Local Kubernetes cluster only (`docker-desktop`, `kind`, or `minikube`)
 - kubectl
 
-### 1) Build consumer image
+This demo is intentionally local-only. The scripts are designed to refuse non-local `kubectl` contexts so they do not touch shared or remote infrastructure.
 
-```bash
-docker build -t consumer:local ./consumer
+### Quick start
+
+From the repository root:
+
+```powershell
+.\scripts\start-demo.ps1
+```
+
+The script will stop immediately unless:
+
+- Docker is running
+- `kubectl` is pointed at a local context such as `docker-desktop`, `minikube`, or `kind-*`
+
+If using `kind`, load the image into the cluster as part of startup:
+
+```powershell
+.\scripts\start-demo.ps1 -LoadToKind
+```
+
+The script does the following:
+
+- builds the consumer Docker image
+- optionally loads the image into `kind`
+- applies the Kubernetes manifests
+- waits for RabbitMQ and consumer rollouts
+- starts port-forwards for RabbitMQ AMQP, RabbitMQ UI, and consumer results API
+- starts a live consumer logs window
+- opens the RabbitMQ queues page and producer Swagger
+- runs the producer locally with the correct environment variables
+
+After it starts, use:
+
+- Swagger: `http://localhost:8080/swagger`
+- RabbitMQ queues page: `http://localhost:15672/#/queues`
+- Consumer results API: `http://localhost:5002/results/{eventId}`
+- Stop script: `.\scripts\stop-demo.ps1`
+
+Keep the extra PowerShell windows open while the demo is running.
+
+### Expected demo flow
+
+1. Run:
+
+   ```powershell
+   .\scripts\start-demo.ps1
+   ```
+
+2. Wait for Swagger to open at `http://localhost:8080/swagger`.
+3. Execute `GET /health` and confirm the system reports healthy dependencies.
+4. Execute `POST /publish-resume-event` and copy the returned `eventId`.
+5. Watch the `resume-demo consumer logs` PowerShell window and confirm a message was processed.
+6. Execute `GET /results/{eventId}` in producer Swagger using the same `eventId`.
+7. Re-run `GET /results/{eventId}` until the result appears.
+8. Confirm the returned JSON includes:
+   - `candidateName`
+   - `detectedSkills`
+   - `processedAt`
+   - `processedByPod`
+9. Optionally watch queue activity in RabbitMQ at `http://localhost:15672/#/queues` while the demo is running.
+10. When done, stop everything with:
+
+   ```powershell
+   .\scripts\stop-demo.ps1
+   ```
+
+### Manual setup
+
+If you prefer to run each step yourself:
+
+Make sure your current `kubectl` context is a local cluster before applying any manifests.
+
+#### 1) Build consumer image
+
+```powershell
+docker build -t consumer:local .\consumer
 ```
 
 If using kind:
 
-```bash
+```powershell
 kind load docker-image consumer:local
 ```
 
-### 2) Deploy RabbitMQ + Consumer
+#### 2) Deploy RabbitMQ + Consumer
 
-```bash
+```powershell
 kubectl apply -f infra/k8s/namespace.yaml
 kubectl apply -f infra/k8s/rabbitmq-deployment.yaml
 kubectl apply -f infra/k8s/rabbitmq-service.yaml
@@ -136,65 +209,73 @@ kubectl apply -f infra/k8s/consumer-deployment.yaml
 kubectl apply -f infra/k8s/consumer.yaml
 ```
 
-### 3) Port-forward Kubernetes services
+#### 3) Port-forward Kubernetes services
 
 RabbitMQ AMQP:
 
-```bash
-kubectl port-forward service/rabbitmq 5672:5672
+```powershell
+kubectl port-forward -n resume-demo service/rabbitmq 5672:5672
 ```
-
-Add `-n resume-demo` if your current kubectl context is not already set to that namespace.
 
 RabbitMQ Management UI:
 
-```bash
-kubectl port-forward service/rabbitmq 15672:15672
+```powershell
+kubectl port-forward -n resume-demo service/rabbitmq 15672:15672
 ```
-
-Add `-n resume-demo` if needed.
 
 Consumer results endpoint:
 
-```bash
-kubectl port-forward service/consumer 5002:8080
+```powershell
+kubectl port-forward -n resume-demo service/consumer 5002:8080
 ```
 
-Add `-n resume-demo` if needed.
-
-### 4) Run backend locally
+#### 4) Run backend locally
 
 From repository root:
 
-```bash
-dotnet run
+```powershell
+$env:RABBITMQ_HOST='localhost'
+$env:RABBITMQ_PORT='5672'
+$env:CONSUMER_RESULTS_BASE_URL='http://localhost:5002'
+$env:CONSUMER_RESULTS_HOST='localhost'
+$env:CONSUMER_RESULTS_PORT='5002'
+dotnet run --project .\producer\producer.csproj
 ```
 
 This starts producer on `http://localhost:8080`.
 
 ## Verifying the system works
 
-1. Open `http://localhost:8080/swagger`.
-2. Execute `POST /publish-resume-event` and capture `eventId`.
-3. Execute `GET /results/{eventId}` until a result appears.
-4. Open RabbitMQ UI at `http://localhost:15672` and verify queue activity.
-5. Check consumer logs:
+1. Run `.\scripts\start-demo.ps1`.
+2. Open `http://localhost:8080/swagger`.
+3. Execute `GET /health` and confirm the status is healthy.
+4. Execute `POST /publish-resume-event` and capture `eventId`.
+5. Execute `GET /results/{eventId}` until a result appears.
+6. Open RabbitMQ UI at `http://localhost:15672` and verify queue activity.
+7. Check consumer logs:
 
-   ```bash
-   kubectl get pods -n resume-demo -l app=consumer
-   kubectl logs -n resume-demo <consumer-pod>
+   ```powershell
+   kubectl logs -n resume-demo deployment/consumer -f
    ```
 
-6. Confirm response includes:
+8. Confirm response includes:
+   - `candidateName`
    - `detectedSkills`
+   - `processedAt`
    - `processedByPod`
+9. Stop the demo:
+
+   ```powershell
+   .\scripts\stop-demo.ps1
+   ```
 
 ## 30 Second Demo Walkthrough
 
-1. Open Swagger (`/swagger`).
-2. Call `POST /publish-resume-event`.
-3. Show RabbitMQ queue count in management UI.
-4. Show consumer pod logs receiving/processing the event.
-5. Call `GET /results/{eventId}` and show processed output.
-6. Highlight `processedByPod` returning Kubernetes pod name.
+1. Run `.\scripts\start-demo.ps1`.
+2. Show `GET /health` in Swagger.
+3. Call `POST /publish-resume-event`.
+4. Show the live consumer logs window receiving and processing the message.
+5. Call `GET /results/{eventId}` in Swagger and show processed output.
+6. Highlight `detectedSkills` and `processedByPod`.
+7. Optionally show RabbitMQ UI.
 

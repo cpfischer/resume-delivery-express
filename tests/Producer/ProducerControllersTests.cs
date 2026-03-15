@@ -11,19 +11,21 @@ public sealed class ProducerControllersTests
     public async Task ResumeEventsController_PublishResumeEvent_ReturnsOkWithEventId()
     {
         var resumeEventService = Substitute.For<IResumeEventApplicationService>();
-        resumeEventService.PublishAsync(Arg.Any<CancellationToken>()).Returns("evt-1");
+        resumeEventService.PublishAsync(Arg.Any<PublishResumeEventRequest>(), Arg.Any<CancellationToken>()).Returns("evt-1");
         var resultQueryService = Substitute.For<IResultQueryService>();
         var controller = new ResumeEventsController(
             resumeEventService,
             resultQueryService);
 
-        var actionResult = await controller.PublishResumeEvent(CancellationToken.None);
+        var request = new PublishResumeEventRequest();
+        var actionResult = await controller.PublishResumeEvent(request, CancellationToken.None);
 
         var okResult = actionResult.Result as OkObjectResult;
         Assert.IsNotNull(okResult);
         var payload = okResult.Value as PublishEventResponse;
         Assert.IsNotNull(payload);
         Assert.AreEqual("evt-1", payload.EventId);
+        await resumeEventService.Received(1).PublishAsync(request, Arg.Any<CancellationToken>());
     }
 
     [TestMethod]
