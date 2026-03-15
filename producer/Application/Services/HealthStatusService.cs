@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Sockets;
-using Application.Producer.Contracts;
+using Producer.Api.Application.Contracts;
 
-namespace Application.Producer.Services;
+namespace Producer.Api.Application.Services;
 
 public sealed class HealthStatusService : IHealthStatusService
 {

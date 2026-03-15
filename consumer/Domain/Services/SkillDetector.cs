@@ -1,4 +1,4 @@
-namespace Domain.Consumer.Services;
+namespace Consumer.Api.Domain.Services;
 
 public static class SkillDetector
 {

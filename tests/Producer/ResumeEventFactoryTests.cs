@@ -1,5 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Domain.Producer.Events;
+using Producer.Api.Domain.Factories;
 
 [TestClass]
 public sealed class ResumeEventFactoryTests

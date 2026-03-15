@@ -1,14 +1,14 @@
 using System.Text;
 using System.Text.Json;
-using Domain.Consumer.Models;
-using Domain.Consumer.Services;
-using Infrastructure.Consumer.Persistence;
+using Consumer.Api.Domain.Services;
+using Consumer.Api.Domain.Services.Models;
+using Consumer.Api.Infrastructure.Persistence;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace Infrastructure.Consumer.Messaging;
+namespace Consumer.Api.Infrastructure.Consumer;
 
 public sealed class ResumeEventConsumer(ResultStore resultStore, ILogger<ResumeEventConsumer> logger) : BackgroundService
 {
@@ -82,3 +82,5 @@ public sealed class ResumeEventConsumer(ResultStore resultStore, ILogger<ResumeE
         logger.LogInformation("Processed event {EventId} with {SkillCount} skill matches", result.EventId, detectedSkills.Length);
     }
 }
+
+

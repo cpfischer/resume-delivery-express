@@ -1,10 +1,10 @@
 using System.Text;
 using System.Text.Json;
-using Application.Producer.Contracts;
-using Domain.Producer.Events;
+using Producer.Api.Application.Contracts;
+using Producer.Api.Domain.Factories;
 using RabbitMQ.Client;
 
-namespace Infrastructure.Producer.Messaging;
+namespace Producer.Api.Infrastructure.Producer;
 
 public sealed class RabbitMqMessagePublisher : IRabbitMqMessagePublisher
 {

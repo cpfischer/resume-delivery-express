@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Domain.Consumer.Models;
-using Infrastructure.Consumer.Persistence;
+using Consumer.Api.Domain.Services.Models;
+using Consumer.Api.Infrastructure.Persistence;
 
 [TestClass]
 public sealed class ResultStoreTests
@@ -28,3 +28,4 @@ public sealed class ResultStoreTests
         Assert.AreEqual("pod-abc", stored.ProcessedByPod);
     }
 }
+

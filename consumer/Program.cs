@@ -1,5 +1,5 @@
-using Infrastructure.Consumer.Messaging;
-using Infrastructure.Consumer.Persistence;
+using Consumer.Api.Infrastructure.Consumer;
+using Consumer.Api.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 

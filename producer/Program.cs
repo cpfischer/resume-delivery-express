@@ -1,6 +1,6 @@
-using Application.Producer.Contracts;
-using Application.Producer.Services;
-using Infrastructure.Producer.Messaging;
+using Producer.Api.Application.Contracts;
+using Producer.Api.Application.Services;
+using Producer.Api.Infrastructure.Producer;
 
 var builder = WebApplication.CreateBuilder(args);
 

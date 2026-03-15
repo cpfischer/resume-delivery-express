@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using Producer.Api;
-using Application.Producer.Contracts;
+using Producer.Api.Api;
+using Producer.Api.Application.Contracts;
 
 [TestClass]
-public sealed class ControllersTests
+public sealed class ProducerControllersTests
 {
     [TestMethod]
     public async Task ResumeEventsController_PublishResumeEvent_ReturnsOkWithEventId()
@@ -108,3 +108,5 @@ public sealed class ControllersTests
     }
 
 }
+
+

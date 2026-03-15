@@ -1,7 +1,7 @@
 using System.Net;
-using Application.Producer.Contracts;
+using Producer.Api.Application.Contracts;
 
-namespace Application.Producer.Services;
+namespace Producer.Api.Application.Services;
 
 public sealed class ResultQueryService(IHttpClientFactory httpClientFactory) : IResultQueryService
 {

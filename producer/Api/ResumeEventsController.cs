@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Application.Producer.Contracts;
+using Producer.Api.Application.Contracts;
 
-namespace Producer.Api;
+namespace Producer.Api.Api;
 
 [ApiController]
 public sealed class ResumeEventsController(IResumeEventApplicationService resumeEventApplicationService, IResultQueryService resultQueryService) : ControllerBase

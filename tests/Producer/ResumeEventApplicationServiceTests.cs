@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Application.Producer.Contracts;
-using Application.Producer.Services;
-using Domain.Producer.Events;
+using Producer.Api.Application.Services;
+using Producer.Api.Application.Contracts;
+using Producer.Api.Domain.Factories;
 
 [TestClass]
 public sealed class ResumeEventApplicationServiceTests
@@ -30,3 +30,4 @@ public sealed class ResumeEventApplicationServiceTests
         }
     }
 }
+

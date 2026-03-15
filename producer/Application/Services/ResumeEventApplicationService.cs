@@ -1,7 +1,7 @@
-using Application.Producer.Contracts;
-using Domain.Producer.Events;
+using Producer.Api.Application.Contracts;
+using Producer.Api.Domain.Factories;
 
-namespace Application.Producer.Services;
+namespace Producer.Api.Application.Services;
 
 public sealed class ResumeEventApplicationService(IRabbitMqMessagePublisher rabbitMqMessagePublisher) : IResumeEventApplicationService
 {

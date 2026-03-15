@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Consumer.Api;
-using Domain.Consumer.Models;
-using Infrastructure.Consumer.Persistence;
+using Consumer.Api.Domain.Services.Models;
+using Consumer.Api.Infrastructure.Persistence;
 
 [TestClass]
 public sealed class ResultsControllerTests
@@ -37,3 +37,4 @@ public sealed class ResultsControllerTests
         Assert.IsInstanceOfType<NotFoundResult>(result);
     }
 }
+

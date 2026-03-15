@@ -1,8 +1,8 @@
 using System.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using Application.Producer.Contracts;
-using Application.Producer.Services;
+using Producer.Api.Application.Services;
+using Producer.Api.Application.Contracts;
 
 [TestClass]
 public sealed class ResultQueryServiceTests
@@ -89,3 +89,4 @@ public sealed class ResultQueryServiceTests
         }
     }
 }
+

@@ -1,4 +1,4 @@
-namespace Domain.Producer.Events;
+namespace Producer.Api.Domain.Factories;
 
 public static class ResumeEventFactory
 {

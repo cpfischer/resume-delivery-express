@@ -1,5 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Domain.Consumer.Services;
+using Consumer.Api.Domain.Services;
 
 [TestClass]
 public sealed class SkillDetectorTests

@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Application.Producer.Services;
+using Producer.Api.Application.Services;
 
 [TestClass]
 public sealed class HealthStatusServiceTests
@@ -55,3 +55,4 @@ public sealed class HealthStatusServiceTests
         return listener;
     }
 }
+

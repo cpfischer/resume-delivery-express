@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Infrastructure.Consumer.Persistence;
+using Consumer.Api.Infrastructure.Persistence;
 
 namespace Consumer.Api;
 
@@ -14,3 +14,4 @@ public sealed class ResultsController(ResultStore store) : ControllerBase
             : NotFound();
     }
 }
+

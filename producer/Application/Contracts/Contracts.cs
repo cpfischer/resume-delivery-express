@@ -1,6 +1,6 @@
-using Domain.Producer.Events;
+using Producer.Api.Domain.Factories;
 
-namespace Application.Producer.Contracts;
+namespace Producer.Api.Application.Contracts;
 
 public sealed record PublishEventResponse(string EventId);
 
