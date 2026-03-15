@@ -20,5 +20,4 @@ app.UseSwaggerUI();
 
 app.MapControllers();
 
-var url = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "http://localhost:8080";
-app.Run(url);
+app.Run();

@@ -12,5 +12,4 @@ var app = builder.Build();
 
 app.MapControllers();
 
-var url = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "http://localhost:5002";
-app.Run(url);
+app.Run();

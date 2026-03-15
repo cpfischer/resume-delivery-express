@@ -10,6 +10,8 @@ public sealed class HealthController(IHealthStatusService healthStatusService) :
     public async Task<ActionResult<HealthStatusResponse>> GetHealth(CancellationToken cancellationToken)
     {
         var result = await healthStatusService.GetStatusAsync(cancellationToken);
-        return Ok(result);
+        return result.AllConnectionsWorking
+            ? Ok(result)
+            : StatusCode(StatusCodes.Status503ServiceUnavailable, result);
     }
 }

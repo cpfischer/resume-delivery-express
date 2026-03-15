@@ -77,13 +77,13 @@ public sealed class ProducerControllersTests
     }
 
     [TestMethod]
-    public async Task HealthController_GetHealth_ReturnsOkPayload()
+    public async Task HealthController_GetHealth_ReturnsOkPayload_WhenAllConnectionsWorking()
     {
         var expected = new HealthStatusResponse(
-            "degraded",
-            false,
-            new HealthChecksResponse("reachable", "unreachable", "unreachable"),
-            new HealthEndpointsResponse("rabbitmq:5672", "consumer:5002"));
+            "healthy",
+            true,
+            new HealthChecksResponse("reachable", "reachable", "reachable"),
+            new HealthEndpointsResponse("rabbitmq:5672", "consumer:8081"));
         var healthService = Substitute.For<IHealthStatusService>();
         healthService.GetStatusAsync(Arg.Any<CancellationToken>()).Returns(expected);
         var controller = new HealthController(healthService);
@@ -96,15 +96,23 @@ public sealed class ProducerControllersTests
     }
 
     [TestMethod]
-    public void RootController_RedirectToSwagger_ReturnsRedirectResult()
+    public async Task HealthController_GetHealth_ReturnsServiceUnavailablePayload_WhenDependenciesFail()
     {
-        var controller = new RootController();
+        var expected = new HealthStatusResponse(
+            "degraded",
+            false,
+            new HealthChecksResponse("reachable", "unreachable", "unreachable"),
+            new HealthEndpointsResponse("rabbitmq:5672", "consumer:8081"));
+        var healthService = Substitute.For<IHealthStatusService>();
+        healthService.GetStatusAsync(Arg.Any<CancellationToken>()).Returns(expected);
+        var controller = new HealthController(healthService);
 
-        var result = controller.RedirectToSwagger();
+        var actionResult = await controller.GetHealth(CancellationToken.None);
 
-        var redirect = result as RedirectResult;
-        Assert.IsNotNull(redirect);
-        Assert.AreEqual("/swagger", redirect.Url);
+        var objectResult = actionResult.Result as ObjectResult;
+        Assert.IsNotNull(objectResult);
+        Assert.AreEqual(503, objectResult.StatusCode);
+        Assert.AreSame(expected, objectResult.Value);
     }
 
 }

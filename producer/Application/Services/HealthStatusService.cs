@@ -14,7 +14,7 @@ public sealed class HealthStatusService : IHealthStatusService
 
         var consumerHost = Environment.GetEnvironmentVariable("CONSUMER_RESULTS_HOST") ?? "localhost";
         var consumerPortRaw = Environment.GetEnvironmentVariable("CONSUMER_RESULTS_PORT");
-        var consumerPort = int.TryParse(consumerPortRaw, out var parsedConsumerPort) ? parsedConsumerPort : 5002;
+        var consumerPort = int.TryParse(consumerPortRaw, out var parsedConsumerPort) ? parsedConsumerPort : 8081;
 
         var rabbitMqReachable = await IsTcpEndpointReachableAsync(rabbitHost, rabbitPort, 800, cancellationToken);
         var consumerReachable = await IsTcpEndpointReachableAsync(consumerHost, consumerPort, 800, cancellationToken);
