@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="consumer-service.tests/consumer-service.tests.csproj" />
+  <Project Path="consumer-service/consumer-service.csproj" />
+  <Project Path="producer-api.tests/producer-api.tests.csproj" />
+  <Project Path="producer-api/producer-api.csproj" />
+</Solution>

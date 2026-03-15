@@ -1,0 +1,15 @@
+C:\Code\PDT\resume-delivery-express\obj\Debug\net10.0\resume-event-demo.GeneratedMSBuildEditorConfig.editorconfig
+C:\Code\PDT\resume-delivery-express\obj\Debug\net10.0\resume-event-demo.AssemblyInfoInputs.cache
+C:\Code\PDT\resume-delivery-express\obj\Debug\net10.0\resume-event-demo.AssemblyInfo.cs
+C:\Code\PDT\resume-delivery-express\obj\Debug\net10.0\resume-event-demo.csproj.CoreCompileInputs.cache
+C:\Code\PDT\resume-delivery-express\obj\Debug\net10.0\resume-event-demo.sourcelink.json
+C:\Code\PDT\resume-delivery-express\bin\Debug\net10.0\resume-event-demo.exe
+C:\Code\PDT\resume-delivery-express\bin\Debug\net10.0\resume-event-demo.deps.json
+C:\Code\PDT\resume-delivery-express\bin\Debug\net10.0\resume-event-demo.runtimeconfig.json
+C:\Code\PDT\resume-delivery-express\bin\Debug\net10.0\resume-event-demo.dll
+C:\Code\PDT\resume-delivery-express\bin\Debug\net10.0\resume-event-demo.pdb
+C:\Code\PDT\resume-delivery-express\obj\Debug\net10.0\resume-event-demo.dll
+C:\Code\PDT\resume-delivery-express\obj\Debug\net10.0\refint\resume-event-demo.dll
+C:\Code\PDT\resume-delivery-express\obj\Debug\net10.0\resume-event-demo.pdb
+C:\Code\PDT\resume-delivery-express\obj\Debug\net10.0\resume-event-demo.genruntimeconfig.cache
+C:\Code\PDT\resume-delivery-express\obj\Debug\net10.0\ref\resume-event-demo.dll
