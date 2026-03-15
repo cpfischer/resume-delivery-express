@@ -38,23 +38,22 @@ Results Endpoint (/results/{eventId})
 
 ## Clean code structure
 
-The producer project follows a lightweight DDD-style separation:
+The producer project follows a lightweight separation:
 
-- `Api/` (HTTP layer)
-- `Application/Producer/Contracts/` (application contracts + DTOs)
-- `Application/Producer/Services/` (use-case services)
-- `Domain/Producer/Events/` (CloudEvent + payload model and factory)
-- `Infrastructure/Producer/Messaging/` (RabbitMQ publisher)
-- all of these folders live inside the single `producer` project
+- `Api/` for HTTP endpoints
+- `Application/Contracts/` for request/response models and interfaces
+- `Application/Services/` for application orchestration
+- `Domain/Factories/` for CloudEvent creation
+- `Infrastructure/Producer/` for RabbitMQ publishing
+- `Infrastructure/Swagger/` for Swagger example/default payload configuration
 
 The consumer project uses a similar separation:
 
-- `Api/` (HTTP layer)
-- `Domain/Consumer/Models/` (event + result models)
-- `Domain/Consumer/Services/` (domain logic such as skill detection)
-- `Infrastructure/Consumer/Persistence/` (in-memory result store)
-- `Infrastructure/Producer/Messaging/` (RabbitMQ consumer worker)
-- all of these folders live inside the single `consumer` project
+- `Api/` for HTTP endpoints
+- `Domain/Models/` for CloudEvent and result models
+- `Domain/Services/` for domain logic such as skill detection
+- `Infrastructure/Consumer/` for the RabbitMQ background worker
+- `Infrastructure/Persistence/` for the in-memory result store
 
 ## Project structure
 
@@ -65,26 +64,22 @@ resume-delivery-express/
     Api/
     producer.csproj
     Application/
-      Producer/
-        Contracts/
-        Services/
+      Contracts/
+      Services/
     Domain/
-      Producer/
-        Events/
+      Factories/
     Infrastructure/
       Producer/
-        Messaging/
+      Swagger/
   consumer/
     Api/
     consumer.csproj
     Domain/
-      Consumer/
-        Models/
-        Services/
+      Models/
+      Services/
     Infrastructure/
       Consumer/
-        Messaging/
-        Persistence/
+      Persistence/
   tests/
     tests.csproj
     Producer/
@@ -95,6 +90,9 @@ resume-delivery-express/
       rabbitmq-service.yaml
       consumer-deployment.yaml
       consumer.yaml
+  scripts/
+    start-demo.ps1
+    stop-demo.ps1
 ```
 
 ## Endpoints (via Swagger)
@@ -113,6 +111,25 @@ Once running on `http://localhost:8080/swagger`, you can invoke:
 - Docker Desktop or a running local Docker daemon
 - Local Kubernetes cluster only (`docker-desktop`, `kind`, or `minikube`)
 - kubectl
+- PowerShell 5.1+ or PowerShell 7+
+
+### Pre-demo setup
+
+Before starting the demo, make sure all of the following are true:
+
+- Docker Desktop is running
+- your local Kubernetes cluster is running
+- `kubectl config current-context` points to a local context such as `docker-desktop`, `minikube`, `kind`, or `kind-*`
+- port `8080` is free for the producer Swagger/API
+- port `5002` is free for the consumer results port-forward
+- port `5672` is free for the RabbitMQ AMQP port-forward
+- port `15672` is free for the RabbitMQ management UI port-forward
+
+Optional but recommended before a demo run:
+
+```powershell
+dotnet test
+```
 
 This demo is intentionally local-only. The scripts are designed to refuse non-local `kubectl` contexts so they do not touch shared or remote infrastructure.
 
@@ -145,6 +162,7 @@ The script does the following:
 - starts a live consumer logs window
 - opens the RabbitMQ queues page and producer Swagger
 - runs the producer locally with the correct environment variables
+- tracks the helper processes so `.\scripts\stop-demo.ps1` can shut them down cleanly
 
 After it starts, use:
 
@@ -165,21 +183,48 @@ Keep the extra PowerShell windows open while the demo is running.
 
 2. Wait for Swagger to open at `http://localhost:8080/swagger`.
 3. Execute `GET /health` and confirm the system reports healthy dependencies.
-4. Execute `POST /publish-resume-event` and copy the returned `eventId`.
-5. Watch the `resume-demo consumer logs` PowerShell window and confirm a message was processed.
-6. Execute `GET /results/{eventId}` in producer Swagger using the same `eventId`.
-7. Re-run `GET /results/{eventId}` until the result appears.
-8. Confirm the returned JSON includes:
+4. Expand `POST /publish-resume-event` and use the default CloudEvent payload shown in Swagger.
+5. Execute `POST /publish-resume-event` and copy the returned `eventId`.
+6. Note that the returned `eventId` is server-generated as a GUID.
+7. Watch the `resume-demo consumer logs` PowerShell window and confirm a message was processed.
+8. Execute `GET /results/{eventId}` in producer Swagger using the same `eventId`.
+9. Re-run `GET /results/{eventId}` until the result appears.
+10. Confirm the returned JSON includes:
+   - `eventId`
    - `candidateName`
    - `detectedSkills`
    - `processedAt`
    - `processedByPod`
-9. Optionally watch queue activity in RabbitMQ at `http://localhost:15672/#/queues` while the demo is running.
-10. When done, stop everything with:
+11. Optionally watch queue activity in RabbitMQ at `http://localhost:15672/#/queues` while the demo is running.
+12. When done, stop everything with:
 
    ```powershell
    .\scripts\stop-demo.ps1
    ```
+
+### Swagger request payload
+
+`POST /publish-resume-event` accepts a CloudEvent-shaped request body. Swagger pre-populates a default payload for you.
+
+The request `id` is only a placeholder to keep the body shaped like a CloudEvent. The actual published event ID is generated by the producer as a GUID and returned in the response.
+
+Example request body:
+
+```json
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "source": "/producer/resume-events",
+  "type": "com.resume.submitted",
+  "specversion": "1.0",
+  "time": "2026-03-15T21:00:00.0000000+00:00",
+  "datacontenttype": "application/json",
+  "data": {
+    "candidateName": "Caleb Fischer",
+    "targetRole": "Software Engineer",
+    "resumeText": "Kubernetes RabbitMQ .NET AWS Grafana Microservices"
+  }
+}
+```
 
 ### Manual setup
 
@@ -249,7 +294,7 @@ This starts producer on `http://localhost:8080`.
 1. Run `.\scripts\start-demo.ps1`.
 2. Open `http://localhost:8080/swagger`.
 3. Execute `GET /health` and confirm the status is healthy.
-4. Execute `POST /publish-resume-event` and capture `eventId`.
+4. Execute `POST /publish-resume-event` and capture the returned GUID `eventId`.
 5. Execute `GET /results/{eventId}` until a result appears.
 6. Open RabbitMQ UI at `http://localhost:15672` and verify queue activity.
 7. Check consumer logs:
@@ -259,6 +304,7 @@ This starts producer on `http://localhost:8080`.
    ```
 
 8. Confirm response includes:
+   - `eventId`
    - `candidateName`
    - `detectedSkills`
    - `processedAt`
